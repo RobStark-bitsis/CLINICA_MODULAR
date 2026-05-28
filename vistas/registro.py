@@ -57,10 +57,21 @@ def crear_vista_registro(ventana, ir_a_menu):
     ent_email = ctk.CTkEntry(grid_personal, placeholder_text="ejemplo@correo.com", width=350, fg_color="#F0F0F0", text_color="black", border_color="#D1D1D1")
     ent_email.grid(row=7, column=0, pady=5, sticky="w")
 
+    # NUEVA FILA 5: Edad y Ocupación (Campos solicitados agregados estéticamente)
+    ctk.CTkLabel(grid_personal, text="Edad", text_color="black", font=fuente_label).grid(row=8, column=0, sticky="w", pady=(10,0))
+    ctk.CTkLabel(grid_personal, text="Ocupación", text_color="black", font=fuente_label).grid(row=8, column=1, sticky="w", pady=(10,0), padx=(20,0))
+
+    ent_edad = ctk.CTkEntry(grid_personal, placeholder_text="Ej. 25", width=350, fg_color="#F0F0F0", text_color="black", border_color="#D1D1D1")
+    ent_edad.grid(row=9, column=0, pady=5, sticky="w")
+
+    ent_ocupacion = ctk.CTkEntry(grid_personal, placeholder_text="Ej. Estudiante, Empleado", width=350, fg_color="#F0F0F0", text_color="black", border_color="#D1D1D1")
+    ent_ocupacion.grid(row=9, column=1, pady=5, padx=(20,0), sticky="w")
+
+
     # --- SECCIÓN 2: EMERGENCY CONTACT ---
     header_emergencia = ctk.CTkFrame(frame_pacientes, fg_color=color_menta, height=40, corner_radius=0)
     header_emergencia.pack(fill="x", pady=(20, 10))
-    ctk.CTkLabel(header_emergencia, text="  EMERGENCY CONTACT DETAILS", text_color=color_texto_seccion, font=fuente_seccion).pack(side="left")
+    ctk.CTkLabel(header_emergencia, text="  CONTACTOS DE EMERGENCIA", text_color=color_texto_seccion, font=fuente_seccion).pack(side="left")
 
     grid_emergencia = ctk.CTkFrame(frame_pacientes, fg_color="white")
     grid_emergencia.pack(fill="x", padx=20)
@@ -76,10 +87,11 @@ def crear_vista_registro(ventana, ir_a_menu):
     ent_emer_tel = ctk.CTkEntry(grid_emergencia, width=230, fg_color="#F0F0F0", text_color="black")
     ent_emer_tel.grid(row=1, column=2, pady=5, padx=(20,0))
 
+
     # --- SECCIÓN EXTRA: MEDICAL INFO ---
     header_medico = ctk.CTkFrame(frame_pacientes, fg_color=color_menta, height=40, corner_radius=0)
     header_medico.pack(fill="x", pady=(20, 10))
-    ctk.CTkLabel(header_medico, text="  MEDICAL INFORMATION (EXTRA)", text_color=color_texto_seccion, font=fuente_seccion).pack(side="left")
+    ctk.CTkLabel(header_medico, text="  INFORMACION MEDICA (EXTRA)", text_color=color_texto_seccion, font=fuente_seccion).pack(side="left")
 
     grid_medico = ctk.CTkFrame(frame_pacientes, fg_color="white")
     grid_medico.pack(fill="x", padx=20)
@@ -91,6 +103,7 @@ def crear_vista_registro(ventana, ir_a_menu):
     txt_enfermedades.grid(row=1, column=0, pady=5, sticky="w")
     txt_alergias = ctk.CTkTextbox(grid_medico, width=350, height=70, fg_color="#F0F0F0", text_color="black", border_width=1)
     txt_alergias.grid(row=1, column=1, pady=5, padx=(20,0), sticky="w")
+
 
     # --- BOTONES DE ACCIÓN ---
     frame_botones = ctk.CTkFrame(frame_pacientes, fg_color="white")
@@ -104,6 +117,8 @@ def crear_vista_registro(ventana, ir_a_menu):
         ent_direccion.delete(0, "end")
         ent_telefono.delete(0, "end")
         ent_email.delete(0, "end")
+        ent_edad.delete(0, "end")          # <-- Limpia edad
+        ent_ocupacion.delete(0, "end")     # <-- Limpia ocupación
         ent_emer_nombre.delete(0, "end")
         ent_emer_relacion.delete(0, "end")
         ent_emer_tel.delete(0, "end")
@@ -124,10 +139,12 @@ def crear_vista_registro(ventana, ir_a_menu):
         nombre = partes[0]
         apellido = partes[1] if len(partes) > 1 else " "
 
+        # Empaquetamos los datos incluyendo edad y ocupacion
         datos = (
             dpi, nombre, apellido, ent_fecha_nac.get().strip(), 
             var_genero.get(), ent_direccion.get().strip(), telefono, 
-            ent_email.get().strip(), ent_emer_nombre.get().strip(), ent_emer_relacion.get().strip(), 
+            ent_email.get().strip(), ent_edad.get().strip(), ent_ocupacion.get().strip(),
+            ent_emer_nombre.get().strip(), ent_emer_relacion.get().strip(), 
             ent_emer_tel.get().strip(), txt_enfermedades.get("1.0", "end").strip(), txt_alergias.get("1.0", "end").strip()
         )
 
@@ -135,9 +152,10 @@ def crear_vista_registro(ventana, ir_a_menu):
         if conexion:
             try:
                 cursor = conexion.cursor()
+                # Modificado el SQL para que inserte edad y ocupacion en tu tabla 'pacientes'
                 sql = """INSERT INTO pacientes 
-                         (dpi, nombre, apellido, fecha_nacimiento, genero, direccion, telefono, email, emer_nombre, emer_relacion, emer_telefono, enfermedades, alergias) 
-                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+                         (dpi, nombre, apellido, fecha_nacimiento, genero, direccion, telefono, email, edad, ocupacion, emer_nombre, emer_relacion, emer_telefono, enfermedades, alergias) 
+                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
                 cursor.execute(sql, datos)
                 conexion.commit()
                 print("¡Paciente registrado exitosamente! 🩺")

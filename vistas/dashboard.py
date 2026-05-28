@@ -58,16 +58,16 @@ def crear_vista_dashboard(ventana):
 
     # Tarjetas requeridas
     crear_tarjeta(frame_cards, "Total Pacientes", num_pacientes, "#7ED9A1")
-    crear_tarjeta(frame_cards, "Citas Programadas", num_citas_totales, "#3b82f6") # 👈 ¡Aquí está tu nueva tarjeta conectada!
+    crear_tarjeta(frame_cards, "Citas Programadas", num_citas_totales, "#3b82f6")
     crear_tarjeta(frame_cards, "Consultas Hoy", "9", "#8b5cf6")
 
     # --- DISTRIBUCIÓN INFERIOR: TABLA (Izquierda) y GRÁFICA (Derecha) ---
     frame_inferior = ctk.CTkFrame(frame_dash, fg_color="transparent")
     frame_inferior.pack(fill="both", expand=True, padx=30, pady=20)
 
-    # Lado Izquierdo: Próximas Citas
+    # Lado Izquierdo: Próximas Citas (Le asignamos expand=True para que comparta el espacio de forma justa)
     frame_izq = ctk.CTkFrame(frame_inferior, fg_color="transparent")
-    frame_izq.pack(side="left", fill="both", expand=True, padx=(0, 10))
+    frame_izq.pack(side="left", fill="both", expand=True, padx=(0, 15))
 
     lbl_proximas = ctk.CTkLabel(frame_izq, text="Próximas Citas Agendadas", font=("Arial", 18, "bold"), text_color="white")
     lbl_proximas.pack(anchor="w", pady=(0, 10))
@@ -83,7 +83,10 @@ def crear_vista_dashboard(ventana):
     tabla_resumen.heading("Hora", text="Hora")
     tabla_resumen.heading("Paciente", text="Paciente")
     tabla_resumen.heading("Motivo", text="Motivo")
-    tabla_resumen.column("Hora", width=80, anchor="center")
+    
+    tabla_resumen.column("Hora", width=80, minwidth=60, anchor="center")
+    tabla_resumen.column("Paciente", width=180, minwidth=140, anchor="w")
+    tabla_resumen.column("Motivo", width=200, minwidth=160, anchor="w")
     
     # Cargar citas reales de la BD a la tablita resumen
     conexion = conectar_db()
@@ -98,29 +101,31 @@ def crear_vista_dashboard(ventana):
 
     tabla_resumen.pack(fill="both", expand=True, padx=15, pady=15)
 
-    # Lado Derecho: Gráfica de Pastel (Estadística de Géneros)
-    frame_der = ctk.CTkFrame(frame_inferior, fg_color="#1e293b", corner_radius=15, width=350)
-    frame_der.pack(side="right", fill="both", padx=(10, 0))
+    # =========================================================================
+    # Lado Derecho: Gráfica de Pastel (¡AQUÍ ESTÁ EL CAMBIO DE ESPACIO!)
+    # =========================================================================
+    # Quitamos el 'width=320' fijo para que no se asfixie el cuadro y le agregamos expand=True
+    frame_der = ctk.CTkFrame(frame_inferior, fg_color="#1e293b", corner_radius=15)
+    frame_der.pack(side="right", fill="both", expand=True, padx=(15, 0))
 
     lbl_grafica = ctk.CTkLabel(frame_der, text="Distribución por Género", font=("Arial", 16, "bold"), text_color="white")
-    lbl_grafica.pack(pady=10)
+    lbl_grafica.pack(pady=15)
 
-    # Crear Gráfica de Pastel con Matplotlib
-    fig, ax = plt.subplots(figsize=(3, 3), facecolor="#1e293b")
+    # Crear Gráfica de Pastel con Matplotlib (Aumentamos ligeramente el figsize a 3.5 para darle más aire)
+    fig, ax = plt.subplots(figsize=(3.5, 3.5), facecolor="#1e293b")
     
-    # Si la BD está vacía, ponemos valores simulación para que no de error la gráfica
     labels = ['Hombres', 'Mujeres']
     sizes = [cant_hombres if cant_hombres > 0 else 1, cant_mujeres if cant_mujeres > 0 else 1]
-    colors = ['#3b82f6', '#7ED9A1'] # Azul para hombres, Verde menta para mujeres
+    colors = ['#3b82f6', '#7ED9A1'] 
 
     ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90, 
-           textprops={'color': "white", 'fontsize': 10}, colors=colors)
+           textprops={'color': "white", 'fontsize': 11}, colors=colors)
     ax.axis('equal')  
 
     # Integrar gráfico de Matplotlib en el contenedor de CustomTkinter
     canvas = FigureCanvasTkAgg(fig, master=frame_der)
     canvas.draw()
-    canvas.get_tk_widget().pack(pady=10, padx=10, fill="both", expand=True)
-    plt.close(fig) # Liberar memoria gráfica
+    canvas.get_tk_widget().pack(pady=(10, 20), padx=20, fill="both", expand=True)
+    plt.close(fig) 
 
     return frame_dash
